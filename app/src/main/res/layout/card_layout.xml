@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_marginBottom="5dp"
+    android:clickable="true"
+    android:layout_margin="5dp"
+    card_view:cardUseCompatPadding="true"
+    card_view:cardElevation="3dp"
+    card_view:cardCornerRadius="3dp"
+    android:layout_height="200dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@color/indigo_50" >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Header"
+            android:id="@+id/tv_title"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:textSize="25sp"
+            android:layout_margin="5dp"
+            android:textColor="@color/blue_900"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="130dp"
+            android:text="This"
+            android:id="@+id/tv_desc"
+            android:layout_below="@+id/tv_title"
+            android:layout_toLeftOf="@+id/iv_thumbnail"
+            android:layout_alignParentLeft="true"
+            android:textSize="15sp"
+            android:layout_margin="5dp"
+            android:ellipsize="end"
+            android:maxLines="7"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/iv_thumbnail"
+            android:layout_below="@+id/tv_title"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:maxHeight="100dp"
+            android:maxWidth="100dp"
+            android:layout_margin="5dp"
+            android:background="@drawable/def_thumnail" />
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>
