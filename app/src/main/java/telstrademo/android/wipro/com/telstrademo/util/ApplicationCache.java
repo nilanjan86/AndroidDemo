@@ -81,7 +81,7 @@ public class ApplicationCache {
         }
 
         if(temp == null){
-            Log.d(TAG,"Image not found in cache for key : "+key);
+            LogManager.d(TAG,"Image not found in cache for key : "+key);
         }
         return temp;
     }
@@ -137,9 +137,9 @@ public class ApplicationCache {
                         snapshot.getInputStream(DISK_CACHE_INDEX).close();
                     }
                 } catch (final IOException e) {
-                    Log.e(TAG, "addBitmapToCache - " + e);
+                    LogManager.e(TAG, "addBitmapToCache - " + e);
                 } catch (Exception e) {
-                    Log.e(TAG, "addBitmapToCache - " + e);
+                    LogManager.e(TAG, "addBitmapToCache - " + e);
                 } finally {
                     try {
                         if (out != null) {
@@ -156,9 +156,9 @@ public class ApplicationCache {
     }
 
     private Bitmap getBitmapFromDiskCache(String key) {
-        Log.d(TAG,"getBitmapFromDiskCache::key = "+key);
+        LogManager.d(TAG,"getBitmapFromDiskCache::key = "+key);
         final String hashed_key = hashKeyForDisk(key);
-        Log.d(TAG,"getBitmapFromDiskCache::hashed_key = "+hashed_key);
+        LogManager.d(TAG,"getBitmapFromDiskCache::hashed_key = "+hashed_key);
         Bitmap bitmap = null;
 
         synchronized (mDiskCacheLock) {
@@ -172,16 +172,16 @@ public class ApplicationCache {
                 try {
                     final DiskLruCache.Snapshot snapshot = mDiskLruCache.get(hashed_key);
                     if (snapshot != null) {
-                        Log.d(TAG,"getBitmapFromDiskCache::snapshot!=null");
+                        LogManager.d(TAG,"getBitmapFromDiskCache::snapshot!=null");
                         inputStream = snapshot.getInputStream(DISK_CACHE_INDEX);
                         if (inputStream != null) {
-                            Log.d(TAG,"getBitmapFromDiskCache::inputStream!=null");
+                            LogManager.d(TAG,"getBitmapFromDiskCache::inputStream!=null");
                             FileDescriptor fd = ((FileInputStream) inputStream).getFD();
                             bitmap = decodeBitmapFromDescriptor(fd);
                         }
                     }
                 } catch (final IOException e) {
-                    Log.e(TAG, "getBitmapFromDiskCache - " + e);
+                    LogManager.e(TAG, "getBitmapFromDiskCache - " + e);
                 } finally {
                     try {
                         if (inputStream != null) {
@@ -287,7 +287,7 @@ public class ApplicationCache {
                                 mDiskLruCache = DiskLruCache.open(
                                         diskCacheDir, 1, 1,DEFAULT_DISK_CACHE_SIZE);
                             } catch (final IOException e) {
-                                Log.e(TAG, "initDiskCache - " + e);
+                                LogManager.e(TAG, "initDiskCache - " + e);
                             }
                         }
                     }

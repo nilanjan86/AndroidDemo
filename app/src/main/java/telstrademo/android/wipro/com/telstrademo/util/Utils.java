@@ -17,7 +17,7 @@ public class Utils {
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         final NetworkInfo networkInfo = cm.getActiveNetworkInfo();
         if (networkInfo == null || !networkInfo.isConnectedOrConnecting()) {
-            Log.e(TAG, "checkConnection - no connection found");
+            LogManager.e(TAG, "checkConnection - no connection found");
             return false;
         }
         return true;

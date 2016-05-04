@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import telstrademo.android.wipro.com.telstrademo.interfaces.INetworkFeedCallback;
+import telstrademo.android.wipro.com.telstrademo.util.Constants;
 
 /**
  * Created by Nilanjan Biswas on 05/02/2016.
@@ -32,7 +33,12 @@ public class NewsFeedDownloaderTask  extends AsyncTask<String,Void,String> {
     @Override
     protected void onPostExecute(String newsJson) {
         super.onPostExecute(newsJson);
-        mNetworkFeedCallback.onDataReceived(newsJson);
+        if(newsJson == null || newsJson.length() == 0){
+            mNetworkFeedCallback.onDataDownloadError(Constants.ERROR_GENERIC);
+        }else{
+            mNetworkFeedCallback.onDataReceived(newsJson);
+        }
+
     }
 
     public String getJSONFromUrl(String newsurl) {
@@ -54,8 +60,10 @@ public class NewsFeedDownloaderTask  extends AsyncTask<String,Void,String> {
             jsonString = sb.toString();
         } catch (MalformedURLException e) {
             e.printStackTrace();
+           //mNetworkFeedCallback.onDataDownloadError(Constants.ERROR_GENERIC);
         } catch (IOException e) {
             e.printStackTrace();
+            //mNetworkFeedCallback.onDataDownloadError(Constants.ERROR_GENERIC);
         } finally {
 
             try {

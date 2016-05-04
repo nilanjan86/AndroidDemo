@@ -11,6 +11,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import telstrademo.android.wipro.com.telstrademo.interfaces.INetworkFeedCallback;
+import telstrademo.android.wipro.com.telstrademo.util.Constants;
+import telstrademo.android.wipro.com.telstrademo.util.LogManager;
 
 /**
  * Created by Nilanjan Biswas on 05/02/2016.
@@ -22,7 +24,7 @@ public class ImageDownloaderTask extends AsyncTask<String,Void,Bitmap>{
     private INetworkFeedCallback mNetworkFeedCallback = null;
     private String mUrl = null;
 
-    private static final int IO_BUFFER_SIZE = 8 * 1024;
+    private static final int IO_BUFFER_SIZE = 20 * 1024;
 
     public ImageDownloaderTask(INetworkFeedCallback instance) {
         mNetworkFeedCallback = instance;
@@ -31,14 +33,14 @@ public class ImageDownloaderTask extends AsyncTask<String,Void,Bitmap>{
     @Override
     protected Bitmap doInBackground(String... url) {
         mUrl = url[0];
-        Log.d(TAG,"doInBackground::mUrl = "+mUrl);
+        LogManager.d(TAG,"doInBackground::mUrl = "+mUrl);
         return downloadBitmap(mUrl);
     }
 
     @Override
     protected void onPostExecute(Bitmap image) {
         super.onPostExecute(image);
-        Log.d(TAG,"onPostExecute::image = "+image);
+        LogManager.d(TAG,"onPostExecute::image = "+image);
         mNetworkFeedCallback.onImageDownloaded(mUrl,image);
     }
 
@@ -46,17 +48,17 @@ public class ImageDownloaderTask extends AsyncTask<String,Void,Bitmap>{
         HttpURLConnection urlConnection = null;
         BufferedInputStream in = null;
         Bitmap bitmap = null;
+        URL url = null;
         try {
-            URL url = new URL(urlString);
+            url = new URL(urlString);
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setInstanceFollowRedirects(false);
-
             urlConnection.connect();
             int responseCode = urlConnection.getResponseCode();
             if(responseCode == 301){
-                Log.d(TAG," responseCode = "+ responseCode);
+                LogManager.d(TAG," responseCode = "+ responseCode);
                 String location = urlConnection.getHeaderField("Location");
-                Log.d(TAG," location = "+ location);
+                LogManager.d(TAG," location = "+ location);
                 url = new URL(location);
                 urlConnection = (HttpURLConnection) url.openConnection();
             }
@@ -65,7 +67,8 @@ public class ImageDownloaderTask extends AsyncTask<String,Void,Bitmap>{
             bitmap = BitmapFactory.decodeStream(in);
 
         } catch (final IOException e) {
-            Log.e(TAG, "Error in downloadBitmap - " + e);
+            LogManager.e(TAG, "Error in downloadBitmap - " + e);
+            //mNetworkFeedCallback.onImageDownloadError(urlString, Constants.ERROR_GENERIC);
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();

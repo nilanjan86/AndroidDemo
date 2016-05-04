@@ -22,5 +22,12 @@ public class Constants {
 
     public static final String SHARED_PREF_FILE = "TELSTRA_PREF";
 
+    public static final int LOG_LEVEL_VERBOSE = 1;
+    public static final int LOG_LEVEL_INFO = 2;
+    public static final int LOG_LEVEL_DEBUG = 3;
+    public static final int LOG_LEVEL_WARNING = 4;
+    public static final int LOG_LEVEL_ERROR = 5;
+
+    public static int LOG_LEVEL = LOG_LEVEL_DEBUG;
 
 }

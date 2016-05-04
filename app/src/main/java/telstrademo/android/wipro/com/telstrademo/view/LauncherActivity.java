@@ -26,6 +26,7 @@ import telstrademo.android.wipro.com.telstrademo.controller.TaskMediator;
 import telstrademo.android.wipro.com.telstrademo.data.NewsFeed;
 import telstrademo.android.wipro.com.telstrademo.interfaces.INetworkFeedCallback;
 import telstrademo.android.wipro.com.telstrademo.util.Constants;
+import telstrademo.android.wipro.com.telstrademo.util.LogManager;
 import telstrademo.android.wipro.com.telstrademo.util.Utils;
 
 public class LauncherActivity extends AppCompatActivity implements INetworkFeedCallback {
@@ -88,38 +89,54 @@ public class LauncherActivity extends AppCompatActivity implements INetworkFeedC
     @Override
     public void onDataReceived(String jsonData) {
         if(jsonData == null){
-            Log.d(TAG,"json data is NULL");
+            LogManager.d(TAG,"json data is NULL");
             return;
         }
-        Log.d(TAG,"json data = "+jsonData);
-        Gson gson = new Gson();
+        LogManager.d(TAG,"json data = "+jsonData);
 
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(jsonData);
-        if(element.isJsonObject()) {
-        }
-        JsonObject obj = element.getAsJsonObject();
-        setTitle(obj.get(Constants.KEY_FEED_TITLE).getAsString());
-        JsonArray arr = obj.getAsJsonArray(Constants.KEY_JSON_ROW);
-
-        ArrayList<NewsFeed> data = new Gson().fromJson(arr.toString(), new TypeToken<ArrayList<NewsFeed>>(){}.getType());
-
-        for(int i =0;i<data.size();i++){
-            if(data.get(i).title==null || data.get(i).title.length()==0)
-                data.remove(i);
-        }
-
-        if(data != null) {
-            Log.d(TAG,"*********************************************************************");
-            for(NewsFeed nf : data){
-                Log.d(TAG,"title = "+nf.title + " url = "+nf.imageHref);
-                Bundle actionData = new Bundle();
-                actionData.putString(Constants.KEY_IMAGE_URL,nf.imageHref);
-                TaskMediator.getInstance(LauncherActivity.this).doAction(Constants.ACTION_FETCH_IMAGE, actionData,null);
+        try{
+            Gson gson = new Gson();
+            JsonParser parser = new JsonParser();
+            JsonElement element = parser.parse(jsonData);
+            if(element!= null && element.isJsonObject()) {
+                JsonObject obj = element.getAsJsonObject();
+                if(obj != null){
+                    setTitle(obj.get(Constants.KEY_FEED_TITLE).getAsString());
+                    JsonArray arr = obj.getAsJsonArray(Constants.KEY_JSON_ROW);
+                    if(arr != null && arr.size()>0){
+                        ArrayList<NewsFeed> data = new Gson().fromJson(arr.toString(), new TypeToken<ArrayList<NewsFeed>>(){}.getType());
+                        if(data!= null && data.size()>0) {
+                            for(int i =0;i<data.size();i++){
+                                if(data.get(i).title==null || data.get(i).title.length()==0)
+                                    data.remove(i);
+                            }
+                            //Start downloading images in background
+                            for(NewsFeed nf : data){
+                                Bundle actionData = new Bundle();
+                                actionData.putString(Constants.KEY_IMAGE_URL,nf.imageHref);
+                                TaskMediator.getInstance(LauncherActivity.this).doAction(Constants.ACTION_FETCH_IMAGE, actionData,null);
+                                LogManager.d(TAG,"Image Download Start for url = "+nf.imageHref);
+                            }
+                            mAdapter.setDataSet(data);
+                            mAdapter.notifyDataSetChanged();
+                        }else{
+                            Snackbar.make(mRecyclerView, "Ooops...something went wrong.", Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
+                        }
+                    }else{
+                        Snackbar.make(mRecyclerView, "Ooops...something went wrong.", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+                    }
+                }else{
+                    Snackbar.make(mRecyclerView, "Ooops...something went wrong.", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                }
+            }else{
+                Snackbar.make(mRecyclerView, "Ooops...something went wrong.", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
             }
-            Log.d(TAG,"*********************************************************************");
-            mAdapter.setDataSet(data);
-            mAdapter.notifyDataSetChanged();
+        }catch(Exception e){
+            e.printStackTrace();
         }
 
     }

@@ -2,6 +2,7 @@ package telstrademo.android.wipro.com.telstrademo.controller;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -13,19 +14,16 @@ import telstrademo.android.wipro.com.telstrademo.backgroundtasks.NewsFeedDownloa
 import telstrademo.android.wipro.com.telstrademo.interfaces.INetworkFeedCallback;
 import telstrademo.android.wipro.com.telstrademo.util.ApplicationCache;
 import telstrademo.android.wipro.com.telstrademo.util.Constants;
+import telstrademo.android.wipro.com.telstrademo.util.LogManager;
 
 /**
  * Created by Nilanjan Biswas on 05/02/2016.
  */
 public class TaskMediator implements INetworkFeedCallback {
     private static final String TAG = "TELSTRA_TaskMediator";
-
     private static TaskMediator ourInstance = null;
     private static ArrayList<INetworkFeedCallback> mCallbackList = new ArrayList<INetworkFeedCallback>();
-
     private Hashtable<String,INetworkFeedCallback> mImageLoaderMap = new Hashtable<String,INetworkFeedCallback>();
-
-
     private Context mContext;
 
     private TaskMediator(Context context) {
@@ -71,10 +69,8 @@ public class TaskMediator implements INetworkFeedCallback {
         }
     }
 
-
-
     public void doAction(int action, Bundle actionData, INetworkFeedCallback callback){
-        Log.d(TAG,"Action = "+action);
+        LogManager.d(TAG,"Action = "+action);
         switch(action){
             case Constants.ACTION_FETCH_NEWS : {
                 //if cache is available,display cached data and simultaneously
@@ -82,7 +78,7 @@ public class TaskMediator implements INetworkFeedCallback {
                 String cachedNewsData = ApplicationCache.getInstance(mContext).getNewsFeedCache();
                 if(cachedNewsData != null && cachedNewsData.length()>0){
                     callback.onDataReceived(cachedNewsData);
-                    Log.d(TAG,"News found in cache ");
+                    LogManager.d(TAG,"News found in cache ");
                 }
                 registerDataListener(callback);
                 new NewsFeedDownloaderTask(this).execute(actionData.getString(Constants.KEY_NEWS_URL));
@@ -93,14 +89,15 @@ public class TaskMediator implements INetworkFeedCallback {
                 if(null != url && url.length()>0){
                     Bitmap tmp = ApplicationCache.getInstance(mContext).getBitmap(url);
                     if(tmp != null){
-                        Log.d(TAG,"IMAGE found in cache url = "+url);
+                        LogManager.d(TAG,"IMAGE found in cache url = "+url);
                         if(callback != null)
                             callback.onImageDownloaded(url,tmp);
                     }else{
                         if(callback != null){
                             registerImageListener(url, callback);
                         }
-                        new ImageDownloaderTask(this).execute(url);
+                        //new ImageDownloaderTask(this).execute(url);
+                        new ImageDownloaderTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,url);
                     }
                 }else {
                     //onImageDownloadError(url,Constants.ERROR_BADURL);
@@ -126,7 +123,7 @@ public class TaskMediator implements INetworkFeedCallback {
 
     @Override
     public void onImageDownloaded(String url, Bitmap image) {
-        Log.d(TAG,"onImageDownloaded::url = "+url+" image = "+image);
+        LogManager.d(TAG,"onImageDownloaded::url = "+url+" image = "+image);
         if(image != null){
             ApplicationCache.getInstance(mContext).cacheBitmap(url,image);
             if(mImageLoaderMap.get(url) != null){
