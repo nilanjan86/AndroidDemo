@@ -28,6 +28,6 @@ public class Constants {
     public static final int LOG_LEVEL_WARNING = 4;
     public static final int LOG_LEVEL_ERROR = 5;
 
-    public static int LOG_LEVEL = LOG_LEVEL_DEBUG;
+    public static int LOG_LEVEL = LOG_LEVEL_ERROR;
 
 }

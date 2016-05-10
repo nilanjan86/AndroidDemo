@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import telstrademo.android.wipro.com.telstrademo.R;
@@ -65,7 +66,6 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if(((NewsViewHolder)holder).mImageHref != null){
             TaskMediator.getInstance(mContext).unregisterImageListener(((NewsViewHolder)holder).mImageHref);
         }
-
     }
 
     @Override
@@ -79,42 +79,36 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if(null != nf.imageHref && nf.imageHref.length()>0){
             ((NewsViewHolder)holder).mImageHref = nf.imageHref;
             Bitmap bitmap = ApplicationCache.getInstance(mContext).getBitmap(nf.imageHref);
-            if(null != bitmap){
-                ((NewsViewHolder)holder).mImage.setImageBitmap(bitmap);
-            }else{
+            if(bitmap != null){
+                WeakReference<Bitmap> wrb = new WeakReference<Bitmap>(bitmap);
+                ((NewsViewHolder)holder).mImage.setImageBitmap(wrb.get());
+            }else {
                 // Piasso takes too much time,especially for redirect urls
-
-               /* Picasso.with(mContext)
+                    /* Picasso.with(mContext)
                         .load(nf.imageHref)
                         .placeholder(R.drawable.def_thumnail)
                         .into(((NewsViewHolder)holder).mImage);*/
 
-                         TaskMediator.getInstance(mContext).registerImageListener(nf.imageHref,new INetworkFeedCallback() {
-                            @Override
-                            public void onDataReceived(String jsonData) {
-                                /* no action*/
-                            }
+                TaskMediator.getInstance(mContext).registerImageListener(nf.imageHref, new INetworkFeedCallback() {
+                    @Override
+                    public void onDataReceived(String jsonData) { /* no action*/ }
 
-                            @Override
-                            public void onImageDownloaded(String url, Bitmap image) {
-                                LogManager.d(TAG,"onImageDownloaded::url = "+url+" image = "+image + " nf = "+nf.title + " holder = "+((NewsViewHolder) holder).mTitle.getText());
-                                if(nf.imageHref!= null && nf.imageHref.length()>0 && nf.imageHref.equals(url)){
-                                    ((NewsViewHolder)holder).mImage.setImageBitmap(image);
-                                }else{
-                                    LogManager.d(TAG,"Ooops..view not visible.Ignore downloaded image");
-                                }
-                            }
+                    @Override
+                    public void onImageDownloaded(String url, Bitmap image) {
+                        LogManager.d(TAG, "onImageDownloaded::url = " + url + " image = " + image + " nf = " + nf.title + " holder = " + ((NewsViewHolder) holder).mTitle.getText());
+                        if (nf.imageHref != null && nf.imageHref.length() > 0 && nf.imageHref.equals(url)) {
+                            ((NewsViewHolder) holder).mImage.setImageBitmap(image);
+                        } else {
+                            LogManager.d(TAG, "Ooops..view not visible.Ignore downloaded image");
+                        }
+                    }
 
-                            @Override
-                            public void onDataDownloadError(int errorCode){
-                                // no action
-                                }
+                    @Override
+                    public void onDataDownloadError(int errorCode) { /* no action*/ }
 
-                            @Override
-                            public void onImageDownloadError(String url, int errorCode)  {
-                                /* no action*/
-                                }
-                        });
+                    @Override
+                    public void onImageDownloadError(String url, int errorCode) { /* no action*/ }
+                });
             }
         }else{
             ((NewsViewHolder)holder).mImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.def_thumnail));
@@ -133,7 +127,10 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return mDataSet.size();
+        if(mDataSet != null)
+            return mDataSet.size();
+        else
+            return 0;
     }
 
     public void setDataSet(ArrayList<NewsFeed> ds){
@@ -142,7 +139,5 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private void clearHolder(RecyclerView.ViewHolder holder){
         ((NewsViewHolder)holder).mImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.def_thumnail));
-        //((NewsViewHolder)holder).mTitle.setText("");
-        //((NewsViewHolder) holder).mDesc.setText("");
     }
 }

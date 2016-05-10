@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 
 import com.google.gson.Gson;
@@ -65,8 +64,6 @@ public class LauncherActivity extends AppCompatActivity implements INetworkFeedC
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
-        //mRecyclerView.setHasFixedSize(true);
-
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
@@ -74,10 +71,10 @@ public class LauncherActivity extends AppCompatActivity implements INetworkFeedC
         mRecyclerView.setAdapter(mAdapter);
 
         if(!Utils.isNetworkConnectionAvailable(this)){
-            Snackbar.make(mRecyclerView, "Ooops...no network connection", Snackbar.LENGTH_LONG)
+            Snackbar.make(mRecyclerView, R.string.network_error_message, Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
         }else{
-            Snackbar.make(mRecyclerView, "Please wait...Trying to fetching latest feed", Snackbar.LENGTH_LONG)
+            Snackbar.make(mRecyclerView, R.string.loading_message, Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
             Bundle actionData = new Bundle();
             actionData.putString(Constants.KEY_NEWS_URL,Constants.NEWS_FEED_URL);
@@ -120,23 +117,25 @@ public class LauncherActivity extends AppCompatActivity implements INetworkFeedC
                             mAdapter.setDataSet(data);
                             mAdapter.notifyDataSetChanged();
                         }else{
-                            Snackbar.make(mRecyclerView, "Ooops...something went wrong.", Snackbar.LENGTH_LONG)
+                            Snackbar.make(mRecyclerView, R.string.generic_error_message, Snackbar.LENGTH_LONG)
                                     .setAction("Action", null).show();
                         }
                     }else{
-                        Snackbar.make(mRecyclerView, "Ooops...something went wrong.", Snackbar.LENGTH_LONG)
+                        Snackbar.make(mRecyclerView, R.string.generic_error_message, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                     }
                 }else{
-                    Snackbar.make(mRecyclerView, "Ooops...something went wrong.", Snackbar.LENGTH_LONG)
+                    Snackbar.make(mRecyclerView, R.string.generic_error_message, Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                 }
             }else{
-                Snackbar.make(mRecyclerView, "Ooops...something went wrong.", Snackbar.LENGTH_LONG)
+                Snackbar.make(mRecyclerView, R.string.generic_error_message, Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         }catch(Exception e){
             e.printStackTrace();
+            Snackbar.make(mRecyclerView, R.string.generic_error_message, Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
         }
 
     }
@@ -146,7 +145,7 @@ public class LauncherActivity extends AppCompatActivity implements INetworkFeedC
 
     @Override
     public void onDataDownloadError(int errorCode) {
-        Snackbar.make(mRecyclerView, "Ooops...failed to fetch latest feed", Snackbar.LENGTH_LONG)
+        Snackbar.make(mRecyclerView, R.string.download_error_message, Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
     }
 

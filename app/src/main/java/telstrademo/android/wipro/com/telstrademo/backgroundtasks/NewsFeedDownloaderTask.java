@@ -13,11 +13,15 @@ import java.net.URL;
 
 import telstrademo.android.wipro.com.telstrademo.interfaces.INetworkFeedCallback;
 import telstrademo.android.wipro.com.telstrademo.util.Constants;
+import telstrademo.android.wipro.com.telstrademo.util.LogManager;
 
 /**
  * Created by Nilanjan Biswas on 05/02/2016.
  */
 public class NewsFeedDownloaderTask  extends AsyncTask<String,Void,String> {
+
+    private static final String TAG = "TELSTRA_NDT";
+
     private INetworkFeedCallback mNetworkFeedCallback = null;
 
     public NewsFeedDownloaderTask(INetworkFeedCallback instance) {
@@ -38,7 +42,6 @@ public class NewsFeedDownloaderTask  extends AsyncTask<String,Void,String> {
         }else{
             mNetworkFeedCallback.onDataReceived(newsJson);
         }
-
     }
 
     public String getJSONFromUrl(String newsurl) {
@@ -59,18 +62,15 @@ public class NewsFeedDownloaderTask  extends AsyncTask<String,Void,String> {
             }
             jsonString = sb.toString();
         } catch (MalformedURLException e) {
-            e.printStackTrace();
-           //mNetworkFeedCallback.onDataDownloadError(Constants.ERROR_GENERIC);
+            LogManager.e(TAG,"Error = "+ e);
         } catch (IOException e) {
-            e.printStackTrace();
-            //mNetworkFeedCallback.onDataDownloadError(Constants.ERROR_GENERIC);
+            LogManager.e(TAG,"Error = "+ e);
         } finally {
-
             try {
                 in.close();
                 urlConnection.disconnect();
             } catch (Exception e) {
-                e.printStackTrace();
+                LogManager.e(TAG,"Error = "+ e);
             }
         }
         return jsonString;

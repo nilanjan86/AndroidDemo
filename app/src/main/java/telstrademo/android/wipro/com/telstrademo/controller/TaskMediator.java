@@ -4,8 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -42,9 +42,7 @@ public class TaskMediator implements INetworkFeedCallback {
         throw new CloneNotSupportedException();
     }
 
-    public void registerImageListener(String url,INetworkFeedCallback callback){
-        mImageLoaderMap.put(url,callback);
-    }
+    public void registerImageListener(String url,INetworkFeedCallback callback){ mImageLoaderMap.put(url,callback); }
 
     public void unregisterImageListener(String url){
         mImageLoaderMap.remove(url);
@@ -89,35 +87,39 @@ public class TaskMediator implements INetworkFeedCallback {
                 if(null != url && url.length()>0){
                     Bitmap tmp = ApplicationCache.getInstance(mContext).getBitmap(url);
                     if(tmp != null){
-                        LogManager.d(TAG,"IMAGE found in cache url = "+url);
+                        WeakReference<Bitmap> wrb = new WeakReference<Bitmap>(tmp);
+                        LogManager.d(TAG,"IMAGE found in cache for url = "+url);
                         if(callback != null)
-                            callback.onImageDownloaded(url,tmp);
+                            callback.onImageDownloaded(url,wrb.get());
                     }else{
                         if(callback != null){
                             registerImageListener(url, callback);
                         }
-                        //new ImageDownloaderTask(this).execute(url);
                         new ImageDownloaderTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,url);
                     }
                 }else {
-                    //onImageDownloadError(url,Constants.ERROR_BADURL);
+                    LogManager.e(TAG,"BAD URL");
                 }
                 break;
             }
             default:
                 break;
-
         }
     }
 
 
     @Override
     public void onDataReceived(String jsonData) {
+        LogManager.d(TAG,"onDataReceived::jsonData = "+jsonData);
         if(jsonData != null && jsonData.length()>0){
             ApplicationCache.getInstance(mContext).cacheNewsFeed(jsonData);
-        }
-        for(INetworkFeedCallback callback : mCallbackList){
-            callback.onDataReceived(jsonData);
+            for(INetworkFeedCallback callback : mCallbackList){
+                callback.onDataReceived(jsonData);
+            }
+        }else{
+            for(INetworkFeedCallback callback : mCallbackList){
+                callback.onDataDownloadError(Constants.ERROR_GENERIC);
+            }
         }
     }
 
@@ -134,12 +136,11 @@ public class TaskMediator implements INetworkFeedCallback {
                 mImageLoaderMap.get(url).onImageDownloadError(url,Constants.ERROR_GENERIC);
             }
         }
-
-
     }
 
     @Override
     public void onDataDownloadError(int errorCode) {
+        LogManager.d(TAG,"onDataDownloadError::errorCode = "+errorCode);
         for(INetworkFeedCallback callback : mCallbackList){
             callback.onDataDownloadError(errorCode);
         }
@@ -147,6 +148,7 @@ public class TaskMediator implements INetworkFeedCallback {
 
     @Override
     public void onImageDownloadError(String url, int errorCode) {
+        LogManager.d(TAG,"onImageDownloadError::url = "+url+"errorCode = "+errorCode);
         mImageLoaderMap.get(url).onImageDownloadError(url,errorCode);
     }
 }

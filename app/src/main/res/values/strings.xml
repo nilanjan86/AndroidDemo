@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">TelstraDemo</string>
     <string name="action_settings">Settings</string>
+    <string name="generic_error_message">Ooops...something went wrong</string>
+    <string name="network_error_message">Ooops...no network connection</string>
+    <string name="download_error_message">"Ooops...failed to fetch latest news"</string>
+    <string name="loading_message">Please wait...Trying to fetching latest feed</string>
 </resources>

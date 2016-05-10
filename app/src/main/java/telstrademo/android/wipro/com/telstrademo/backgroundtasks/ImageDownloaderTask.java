@@ -3,15 +3,14 @@ package telstrademo.android.wipro.com.telstrademo.backgroundtasks;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 import telstrademo.android.wipro.com.telstrademo.interfaces.INetworkFeedCallback;
-import telstrademo.android.wipro.com.telstrademo.util.Constants;
 import telstrademo.android.wipro.com.telstrademo.util.LogManager;
 
 /**
@@ -23,7 +22,6 @@ public class ImageDownloaderTask extends AsyncTask<String,Void,Bitmap>{
 
     private INetworkFeedCallback mNetworkFeedCallback = null;
     private String mUrl = null;
-
     private static final int IO_BUFFER_SIZE = 20 * 1024;
 
     public ImageDownloaderTask(INetworkFeedCallback instance) {
@@ -44,11 +42,12 @@ public class ImageDownloaderTask extends AsyncTask<String,Void,Bitmap>{
         mNetworkFeedCallback.onImageDownloaded(mUrl,image);
     }
 
-    public Bitmap downloadBitmap(String urlString/*, OutputStream outputStream*/) {
+    public Bitmap downloadBitmap(String urlString) {
         HttpURLConnection urlConnection = null;
         BufferedInputStream in = null;
         Bitmap bitmap = null;
         URL url = null;
+        WeakReference<Bitmap> wrb = null;
         try {
             url = new URL(urlString);
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -58,17 +57,15 @@ public class ImageDownloaderTask extends AsyncTask<String,Void,Bitmap>{
             if(responseCode == 301){
                 LogManager.d(TAG," responseCode = "+ responseCode);
                 String location = urlConnection.getHeaderField("Location");
-                LogManager.d(TAG," location = "+ location);
+                LogManager.d(TAG," REDIRECT URL = "+ location);
                 url = new URL(location);
                 urlConnection = (HttpURLConnection) url.openConnection();
             }
-
             in = new BufferedInputStream(urlConnection.getInputStream(), IO_BUFFER_SIZE);
             bitmap = BitmapFactory.decodeStream(in);
-
+            wrb = new WeakReference<Bitmap>(bitmap);
         } catch (final IOException e) {
             LogManager.e(TAG, "Error in downloadBitmap - " + e);
-            //mNetworkFeedCallback.onImageDownloadError(urlString, Constants.ERROR_GENERIC);
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -79,7 +76,10 @@ public class ImageDownloaderTask extends AsyncTask<String,Void,Bitmap>{
                 }
             } catch (final IOException e) {}
         }
-        return bitmap;
+        if(bitmap != null)//might need to implement retry logic if required
+            return wrb.get();
+        else
+            return null;
     }
 
 
